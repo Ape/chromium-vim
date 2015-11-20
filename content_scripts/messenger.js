@@ -84,13 +84,13 @@ port.onMessage.addListener(function(response) {
       if (Command.historyMode) {
         if (Command.active && Command.bar.style.display !== 'none') {
           Command.completions = { history: matches };
-          Command.updateCompletions(false);
+          Command.markCompletionsForUpdate();
         }
       } else if (Command.searchMode) {
         Command.searchMode = false;
         if (Command.active && Command.bar.style.display !== 'none') {
           Command.completions.history = matches;
-          Command.updateCompletions(true);
+          Command.markCompletionsForUpdate();
         }
       }
       break;
@@ -118,7 +118,7 @@ port.onMessage.addListener(function(response) {
             return [ response.buffers[+val - 1] ] || [];
           })()
         };
-        Command.updateCompletions();
+        Command.markCompletionsForUpdate();
       }
       break;
     case 'sessions':
@@ -131,7 +131,7 @@ port.onMessage.addListener(function(response) {
       if (response.path.length) {
         Command.completions = {};
         Command.completions.paths = response.path;
-        Command.updateCompletions();
+        Command.markCompletionsForUpdate();
       } else {
         Command.hideData();
       }
