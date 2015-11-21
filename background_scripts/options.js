@@ -55,6 +55,7 @@ var defaultSettings = {
   changelog: true,
   localconfig: false,
   completeonopen: false,
+  manualcompletion: false,
   scrollduration: 500,
   zoomfactor: 0.10,
   configpath: '',

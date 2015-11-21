@@ -181,17 +181,21 @@ Command.completionOrder = {
   }
 };
 
-Command.markCompletionsForUpdate = function() {
-  this.completionsNeedUpdate = true;
+Command.updateCompletions = function(useStyles) {
+  if (settings.manualcompletion) {
+    this.completionsNeedUpdate = true;
+  } else {
+    this.executeCompletionUpdate(useStyles);
+  }
 };
 
-Command.updateCompletions = function(useStyles) {
+Command.executeCompletionUpdate = function(useStyles) {
   if (!window.isCommandFrame)
     return;
+  this.completionsNeedUpdate = false;
   this.completionResults = [];
   this.dataElements = [];
   this.data.innerHTML = '';
-  this.completionsNeedUpdate = false;
   var key, i;
   var completionKeys = Object.keys(this.completions).sort(function(a, b) {
     return this.completionOrder.getImportance(b) -
@@ -317,18 +321,18 @@ Command.callCompletionFunction = (function() {
           ]);
         }
       }
-      self.markCompletionsForUpdate();
+      self.updateCompletions(true);
       self.completions.topsites = Search.topSites.filter(function(e) {
         return ~(e[0] + ' ' + e[1]).toLowerCase()
           .indexOf(search.slice(0).join(' ').toLowerCase());
       }).slice(0, 5).map(function(e) {
         return [e[0], e[1]];
       });
-      self.markCompletionsForUpdate();
+      self.updateCompletions(true);
       if (search.length) {
         Marks.match(search.join(' '), function(response) {
           self.completions.bookmarks = response;
-          self.markCompletionsForUpdate();
+          self.updateCompletions(true);
         }, 2);
       }
       self.historyMode = false;
@@ -349,7 +353,7 @@ Command.callCompletionFunction = (function() {
         Complete.hasOwnProperty(search[0])) {
       Complete[search[0]](search.slice(1).join(' '), function(response) {
         self.completions = { search: response };
-        self.markCompletionsForUpdate();
+        self.updateCompletions();
       });
     }
   };
@@ -363,7 +367,7 @@ Command.callCompletionFunction = (function() {
           limit: settings.searchlimit
         })
       };
-      self.markCompletionsForUpdate();
+      self.updateCompletions();
     });
   };
 
@@ -379,7 +383,7 @@ Command.callCompletionFunction = (function() {
             .indexOf(value.replace(/^\S+\s+/, '').toLowerCase());
         })
       };
-      self.markCompletionsForUpdate();
+      self.updateCompletions();
     });
   };
 
@@ -399,7 +403,7 @@ Command.callCompletionFunction = (function() {
         return e[0].substring(0, search.length) === search;
       })
     };
-    self.markCompletionsForUpdate();
+    self.updateCompletions();
   };
 
   return function(value) {
@@ -416,7 +420,7 @@ Command.callCompletionFunction = (function() {
     case 'chrome':
       Search.chromeMatch(search, function(matches) {
         self.completions = { chrome: matches };
-        self.markCompletionsForUpdate();
+        self.updateCompletions();
       });
       return true;
     case 'tabhistory':
@@ -437,7 +441,7 @@ Command.callCompletionFunction = (function() {
             })
           };
           Command.completions.windows.unshift(['0 (New window)', '']);
-          Command.markCompletionsForUpdate();
+          Command.updateCompletions();
         }
       });
       self.completions = {};
@@ -456,7 +460,7 @@ Command.callCompletionFunction = (function() {
     case 'set':
       Search.settingsMatch(search, function(matches) {
         self.completions = {settings: matches};
-        self.markCompletionsForUpdate();
+        self.updateCompletions();
       });
       return true;
     case 'let': // TODO
@@ -482,7 +486,7 @@ Command.callCompletionFunction = (function() {
       }
       Marks.match(search, function(response) {
         self.completions.bookmarks = response;
-        self.markCompletionsForUpdate();
+        self.updateCompletions();
       });
       return true;
     }
@@ -506,7 +510,7 @@ Command.complete = function(value) {
       return originalValue === element[0].slice(0, originalValue.length);
     })
   };
-  this.markCompletionsForUpdate();
+  this.updateCompletions();
 };
 
 Command.execute = function(value, repeats) {

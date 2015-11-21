@@ -387,9 +387,8 @@ var KeyHandler = {
       case '<S-Tab>':
         if (Command.type === 'action') {
           event.preventDefault();
-
           if (Command.completionsNeedUpdate) {
-            Command.updateCompletions(true);
+            Command.executeCompletionUpdate(true);
           } else {
             Mappings.actions[ (key === '<Tab>' ? 'next' : 'previous') +
                               'CompletionResult' ]();
